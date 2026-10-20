@@ -132,8 +132,11 @@ async function tokens(text) {
     if (!text) return 0;
     if (tokenCache.has(text)) return tokenCache.get(text);
     try {
-        const n = await getTokenCountAsync(text);
-        if (n > 0) tokenCache.set(text, n); // never cache a 0 (tokenizer not ready yet)
+        let n = await getTokenCountAsync(text);
+        // SillyTavern caches results; if the tokenizer wasn't ready on the first call, that cached
+        // value is 0 forever. A slightly different string skips that cache entry.
+        if (!n) n = Math.max(0, (await getTokenCountAsync(`${text}\n`)) - 1);
+        if (n > 0) tokenCache.set(text, n);
         return n;
     } catch {
         return Math.round(text.length / 3.6);
@@ -671,17 +674,27 @@ function renderTab() {
     updateTokenBadges();
 }
 
+let tokenRetries = 0;
 async function updateTokenBadges() {
     const c = currentChar();
     if (!c || !hubEl) return;
+    let missing = false;
     for (const el of hubEl.querySelectorAll('.chh-tabbody .chh-field')) {
         const ta = el.querySelector('textarea');
         const badge = el.querySelector('.chh-tk');
         if (!ta || !badge) continue;
         const n = await tokens(ta.value);
-        badge.textContent = ta.value ? `${n.toLocaleString()} tokens` : '';
+        if (ta.value.trim() && !n) missing = true;
+        badge.textContent = ta.value ? (n ? `${n.toLocaleString()} tokens` : '… tokens') : '';
     }
-    renderBudget();
+    await renderBudget();
+    // right after a page load the tokenizer can still be warming up and return 0: try again shortly
+    if (missing && tokenRetries < 8) {
+        tokenRetries++;
+        setTimeout(updateTokenBadges, 1500);
+    } else if (!missing) {
+        tokenRetries = 0;
+    }
 }
 
 // ----- right column -----

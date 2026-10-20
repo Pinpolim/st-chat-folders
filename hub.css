@@ -216,10 +216,16 @@ body.chh-open #chh-hub { display: block; }
 .chh-hint { font-size: .8em; color: var(--chh-muted); margin: -2px 0 6px; }
 .chh-fbody { display: flex; gap: 6px; align-items: stretch; }
 .chh-fbody textarea {
-    flex: 1; min-width: 0; resize: none; overflow: hidden;
+    flex: 1; min-width: 0; resize: none; overflow-y: auto;
     background: transparent; border: 1px solid transparent; border-radius: 6px;
     color: var(--chh-text); font: inherit; line-height: 1.55; padding: 6px 8px; margin: 0;
-    min-height: 2.4em; max-height: none; field-sizing: content;
+    min-height: 2.4em; max-height: 60vh; /* long fields scroll inside instead of pushing the page */
+    scrollbar-width: thin;
+}
+/* side-by-side fields (Personality / Scenario) get a fixed, equal height */
+.chh-field:not(.wide) .chh-fbody textarea {
+    height: var(--chh-pair-height, 15.5em) !important;
+    max-height: none;
 }
 .chh-fbody textarea:hover { background: color-mix(in srgb, var(--chh-bg1) 40%, transparent); }
 .chh-fbody textarea:focus { outline: none; background: var(--chh-bg1); border-color: var(--chh-line); }
