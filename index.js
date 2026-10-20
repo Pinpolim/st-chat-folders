@@ -11,70 +11,8 @@ import { callGenericPopup, POPUP_TYPE } from '../../../popup.js';
 import { timestampToMoment } from '../../../utils.js';
 import * as Welcome from '../../../welcome-screen.js';
 
-const MODULE = 'chatFolders';
-const LOG = '[Chat Folders]';
-
-const DEFAULTS = Object.freeze({
-    enabled: true,
-    maxChats: 300,          // how many chat files to scan (most recent first)
-    layout: 'list',         // 'list' | 'grid'
-    sort: 'recent',         // 'recent' | 'name'
-    showPreview: true,      // last message snippet under each chat
-    showPersona: true,      // persona avatar under chat title
-    stripCharName: true,    // "Aria - Road trip" -> "Road trip" inside Aria's folder
-    inferPersona: true,     // fall back to character-connected / default persona when chat has no lock
-    hideGreeting: true,     // hide the welcome assistant greeting + hint message
-    hidePromptButtons: true,// hide the API Connections / Character Management / Extensions buttons
-    hideInput: true,        // hide the chat input bar while on the welcome page
-    logoStyle: 'emboss',    // 'emboss' | 'deboss' | 'mono' | 'original'
-    versionFooter: true,    // move "SillyTavern x.y.z" to a faded footer at the bottom
-    assistantButton: true,  // replace "Temporary Chat" with "new chat with your assistant"
-    expanded: [],           // folder keys that are open
-    pinned: [],             // folder keys pinned to top
-});
-
-/** @returns {typeof DEFAULTS} */
-function settings() {
-    if (!extension_settings[MODULE]) {
-        extension_settings[MODULE] = structuredClone(DEFAULTS);
-    }
-    const s = extension_settings[MODULE];
-    // one-time migration from v0.2
-    if (s.monoLogo !== undefined) {
-        if (s.logoStyle === undefined) s.logoStyle = s.monoLogo ? 'emboss' : 'original';
-        if (!s.hideGreeting) s.hideGreeting = true;
-        delete s.monoLogo;
-    }
-    for (const [k, v] of Object.entries(DEFAULTS)) {
-        if (s[k] === undefined) s[k] = structuredClone(v);
-    }
-    return s;
-}
-
-const save = () => ST.saveSettingsDebounced();
-
-// ---------- helpers ----------
-
-const esc = (v) => String(v ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', '\'': '&#39;' }[ch]));
-
-function thumb(type, file) {
-    return typeof ST.getThumbnailUrl === 'function'
-        ? ST.getThumbnailUrl(type, file)
-        : `/thumbnail?type=${type}&file=${encodeURIComponent(file)}`;
-}
-
-function toMoment(ts) {
-    try {
-        return timestampToMoment(ts);
-    } catch {
-        return null;
-    }
-}
-
-function momentValue(ts) {
-    const m = toMoment(ts);
-    return m && m.isValid() ? m.valueOf() : 0;
-}
+import { MODULE, LOG, DEFAULTS, settings, save, esc, thumb, toMoment, momentValue, resolvePersona } from './shared.js';
+import { initHub } from './hub.js';
 
 /** Remembers which folders are open / pinned. */
 function toggleListItem(listName, key, on) {
@@ -147,29 +85,6 @@ function buildFolders(chats) {
         return b.last - a.last;
     });
     return list;
-}
-
-/**
- * Works out which persona belongs to a chat.
- * Priority: persona locked to the chat > persona connected to the character/group > default persona.
- */
-function resolvePersona(chat, folder) {
-    const personas = power_user?.personas ?? {};
-    const exists = (avatar) => avatar && Object.hasOwn(personas, avatar);
-
-    const locked = chat.chat_metadata?.persona;
-    if (exists(locked)) return { avatar: locked, source: 'chat' };
-
-    if (!settings().inferPersona) return null;
-
-    const type = folder.isGroup ? 'group' : 'character';
-    const connected = Object.entries(power_user?.persona_descriptions ?? {})
-        .filter(([avatar, d]) => exists(avatar) && d?.connections?.some(c => c.type === type && c.id === folder.id))
-        .map(([avatar]) => avatar);
-    if (connected.length) return { avatar: connected[0], source: 'character', extra: connected.length - 1 };
-
-    if (exists(power_user?.default_persona)) return { avatar: power_user.default_persona, source: 'default' };
-    return null;
 }
 
 // ---------- actions ----------
@@ -708,6 +623,18 @@ const SETTINGS_HTML = `
             <label class="checkbox_label"><input type="checkbox" data-key="stripCharName"> Hide character name at the start of chat titles</label>
             <label class="checkbox_label"><input type="checkbox" data-key="showPreview"> Show last message preview</label>
             <hr class="sysHR">
+            <b>Character Hub</b>
+            <label class="checkbox_label" title="Desktop only (window at least 1000px wide). The classic panel stays available from a button inside the hub."><input type="checkbox" data-key="hubEnabled"> Character icon opens the Character Hub</label>
+            <label class="checkbox_label"><input type="checkbox" data-key="hubHdImages"> Full-resolution card art</label>
+            <div class="chf-settings-row">
+                <label>Tags shown per card</label>
+                <input type="number" class="text_pole" data-key="hubTagLimit" min="0" max="20" step="1">
+            </div>
+            <div class="chf-settings-row">
+                <label>Card size (px)</label>
+                <input type="number" class="text_pole" data-key="hubCardSize" min="110" max="320" step="10">
+            </div>
+            <hr class="sysHR">
             <b>Welcome page</b>
             <div class="chf-settings-row">
                 <label title="Colours adapt automatically to your background image and theme.">Logo style</label>
@@ -760,7 +687,10 @@ function mountSettings() {
         if (!key) return;
         const s = settings();
         if (el.type === 'checkbox') s[key] = el.checked;
-        else if (el.type === 'number') s[key] = Math.min(5000, Math.max(10, parseInt(el.value) || DEFAULTS.maxChats));
+        else if (el.type === 'number') {
+            const min = Number(el.min) || 0, max = Number(el.max) || 5000;
+            s[key] = Math.min(max, Math.max(min, parseInt(el.value) || DEFAULTS[key]));
+        }
         else s[key] = el.value;
         save();
         syncSettingsUi();
@@ -773,6 +703,7 @@ function mountSettings() {
 jQuery(() => {
     settings();
     mountSettings();
+    try { initHub(); } catch (err) { console.error(LOG, 'hub init failed', err); }
     syncBodyClasses();
 
     // Re-tint the logo when the theme colours or background image change
