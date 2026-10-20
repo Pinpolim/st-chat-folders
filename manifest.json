@@ -1,0 +1,12 @@
+{
+    "display_name": "Chat Folders (Welcome Screen)",
+    "loading_order": 110,
+    "requires": [],
+    "optional": [],
+    "js": "index.js",
+    "css": "style.css",
+    "author": "you + Claude",
+    "version": "0.3.0",
+    "homePage": "",
+    "auto_update": false
+}
