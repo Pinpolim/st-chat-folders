@@ -21,6 +21,11 @@ The Character Management icon opens a full-page hub instead of the side drawer:
 - Right column: this character's chats with personas, token budget, character / additional / chat lorebooks, connected personas
 - Edits save through SillyTavern's own `/api/characters/merge-attributes` endpoint; the classic panel stays one click away
 
+## Layout manager (desktop)
+
+- One page at a time: opening a top-bar page closes the others (and the Character Hub)
+- The preset panel is the only sidebar, on the right. It sits next to the chat / welcome page, Persona Management, Lorebooks and the Character Hub (where it replaces the hub's right column). Opening it over any other page closes that page, and opening another page closes it
+
 Settings: **Extensions → Chat Folders**.
 
 ## Install

@@ -19,6 +19,7 @@ import { getSanitizedFilename } from '../../../utils.js';
 import { extension_settings, writeExtensionField } from '../../../extensions.js';
 import * as Welcome from '../../../welcome-screen.js';
 import { LOG, settings, save, esc, thumb, toMoment, resolvePersona } from './shared.js';
+import { registerHub, beforeHubOpens, sidebarOpen, sidebarWidth, layoutActive } from './layout.js';
 
 // ---------------------------------------------------------------------------
 // Field model
@@ -281,6 +282,10 @@ function positionHub() {
         if (r.height > r.width * 2) hubEl.style.left = `${Math.round(r.right)}px`;
         else hubEl.style.top = `${Math.round(r.bottom)}px`;
     }
+    // the preset sidebar takes the place of the hub's own right column
+    const side = sidebarOpen() ? sidebarWidth() : 0;
+    hubEl.style.right = `${side}px`;
+    hubEl.classList.toggle('chh-with-sidebar', side > 0);
 }
 
 function hubAllowed() {
@@ -298,6 +303,7 @@ export function openHub(view = 'library', avatar = null) {
         hubEl.addEventListener('change', onHubChange);
         hubEl.addEventListener('keydown', onHubKey);
     }
+    beforeHubOpens();
     // close the stock drawer if it is open
     if ($('#right-nav-panel').hasClass('openDrawer') && !$('#right-nav-panel').hasClass('pinnedOpen')) {
         state.bypass = true;
@@ -1198,7 +1204,17 @@ function onHubChange(e) {
 
 export function initHub() {
     // Intercept the Character Management icon (capture phase, before jQuery/theme handlers)
+    registerHub({ isOpen: () => state.open, close: closeHub, reposition: () => state.open && positionHub() });
+
     document.addEventListener('click', (e) => {
+        // any other top-bar button closes the hub and opens right away
+        // (with the layout manager on, the preset sidebar may stay open next to the hub)
+        const other = /** @type {HTMLElement} */ (e.target)?.closest?.('.drawer-toggle');
+        if (state.open && other && other.id !== 'unimportantYes') {
+            const id = other.closest('.drawer')?.querySelector('.drawer-content')?.id;
+            if (!(layoutActive() && id === 'left-nav-panel')) closeHub();
+            return;
+        }
         const toggle = /** @type {HTMLElement} */ (e.target)?.closest?.('#unimportantYes');
         if (!toggle || state.bypass || !hubAllowed()) return;
         e.preventDefault();

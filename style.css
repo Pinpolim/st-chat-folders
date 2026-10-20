@@ -443,3 +443,22 @@ body.chf-welcome.chf-hide-input #chat {
     margin: 4px 0;
 }
 .chf-settings-row .text_pole { max-width: 55%; margin: 0; }
+
+/* ===== Layout manager (desktop): one page at a time, preset as the right sidebar ===== */
+body.chf-layout #WorldInfo.openDrawer,
+body.chf-layout #PersonaManagement.openDrawer {
+    position: fixed !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    left: var(--chf-rail-w, 0px) !important;
+    right: 0 !important;
+    width: auto !important;
+    max-width: none !important;
+    height: auto !important;
+    max-height: none !important;
+    z-index: 40 !important;
+}
+body.chf-layout.chf-sidebar-open #WorldInfo.openDrawer,
+body.chf-layout.chf-sidebar-open #PersonaManagement.openDrawer {
+    right: var(--chf-sidebar-w, 0px) !important;
+}

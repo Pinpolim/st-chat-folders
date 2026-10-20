@@ -13,6 +13,7 @@ import * as Welcome from '../../../welcome-screen.js';
 
 import { MODULE, LOG, DEFAULTS, settings, save, esc, thumb, toMoment, momentValue, resolvePersona } from './shared.js';
 import { initHub } from './hub.js';
+import { initLayout, syncLayout } from './layout.js';
 
 /** Remembers which folders are open / pinned. */
 function toggleListItem(listName, key, on) {
@@ -623,6 +624,9 @@ const SETTINGS_HTML = `
             <label class="checkbox_label"><input type="checkbox" data-key="stripCharName"> Hide character name at the start of chat titles</label>
             <label class="checkbox_label"><input type="checkbox" data-key="showPreview"> Show last message preview</label>
             <hr class="sysHR">
+            <b>Layout (desktop)</b>
+            <label class="checkbox_label" title="Opening a top-bar page closes the others. The preset panel is the only sidebar: it sits next to the chat, Persona Management, Lorebooks and the Character Hub, and closes anything else."><input type="checkbox" data-key="layoutManager"> One page at a time, preset panel as right sidebar</label>
+            <hr class="sysHR">
             <b>Character Hub</b>
             <label class="checkbox_label" title="Desktop only (window at least 1000px wide). The classic panel stays available from a button inside the hub."><input type="checkbox" data-key="hubEnabled"> Character icon opens the Character Hub</label>
             <label class="checkbox_label"><input type="checkbox" data-key="hubHdImages"> Full-resolution card art</label>
@@ -695,6 +699,7 @@ function mountSettings() {
         save();
         syncSettingsUi();
         rerenderAll();
+        syncLayout();
     });
 }
 
@@ -704,6 +709,7 @@ jQuery(() => {
     settings();
     mountSettings();
     try { initHub(); } catch (err) { console.error(LOG, 'hub init failed', err); }
+    try { initLayout(); } catch (err) { console.error(LOG, 'layout init failed', err); }
     syncBodyClasses();
 
     // Re-tint the logo when the theme colours or background image change

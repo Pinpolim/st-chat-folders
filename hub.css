@@ -306,3 +306,7 @@ body.chh-open #chh-hub { display: block; }
 
 .chh-alt-name { text-transform: none; letter-spacing: 0; font-weight: 500; padding: 1px 7px; border-radius: 4px; background: var(--chh-hover); }
 .chh-alt-name.on { background: color-mix(in srgb, var(--chh-brand) 25%, transparent); color: var(--chh-text); }
+
+/* preset sidebar open: it replaces the hub's right column */
+#chh-hub.chh-with-sidebar .chh-pside { display: none; }
+#chh-hub.chh-with-sidebar { border-right: 1px solid var(--chh-line); }
