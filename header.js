@@ -131,7 +131,7 @@ function ensureBar() {
         const back = document.createElement('div');
         back.id = 'chf-swap-back';
         back.className = 'drawer';
-        back.innerHTML = '<div class="drawer-toggle"><div class="drawer-icon fa-solid fa-hashtag fa-fw closedIcon" title="Show the chat header"></div></div>';
+        back.innerHTML = '<div class="drawer-toggle"><div class="drawer-icon fa-solid fa-bars fa-fw closedIcon" title="Show the chat header"></div></div>';
         back.addEventListener('click', (e) => {
             e.stopPropagation();
             setMode('header');
@@ -150,7 +150,7 @@ function setMode(m) {
 export function sync() {
     if (!enabled()) {
         bar?.classList.add('chf-hidden');
-        document.body.classList.remove('chf-hdr', 'chf-hdr-replace', 'chf-hdr-stbar', 'chf-hdr-enabled');
+        document.body.classList.remove('chf-hdr', 'chf-hdr-replace', 'chf-hdr-stbar', 'chf-hdr-enabled', 'chf-hbar');
         return;
     }
     document.body.classList.add('chf-hdr-enabled');
@@ -158,11 +158,16 @@ export function sync() {
     const show = inChat();
     const horizontal = !isRail();
     const replace = show && horizontal && mode === 'header';
+    // in the top bar's slot the header must live at page level (the chat column has its own stacking layer)
+    const sheld = document.getElementById('sheld');
+    if (replace && bar.parentElement !== document.body) document.body.append(bar);
+    else if (!replace && bar.parentElement !== sheld && sheld) sheld.insertBefore(bar, document.getElementById('chat'));
     bar.classList.toggle('chf-hidden', !show || (horizontal && mode !== 'header'));
     bar.classList.toggle('chf-compact', isNarrow());
     document.body.classList.toggle('chf-hdr', show);
     document.body.classList.toggle('chf-hdr-replace', replace);
     document.body.classList.toggle('chf-hdr-stbar', show && horizontal && mode !== 'header');
+    document.body.classList.toggle('chf-hbar', horizontal);
 }
 
 async function render() {

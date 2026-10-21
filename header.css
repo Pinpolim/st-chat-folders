@@ -105,16 +105,32 @@
 .chf-h-danger { color: #f23f42; }
 
 /* compact (phones / narrow windows) */
-#chf-header.chf-compact { gap: 4px; padding: 0 4px 0 6px; height: 44px; }
+#chf-header.chf-compact { gap: 4px; padding: 0 4px 0 6px; height: 44px; box-sizing: border-box; }
 #chf-header.chf-compact .chf-h-chat { max-width: none; flex: 1 1 auto; padding: 6px 6px !important; }
 #chf-header.chf-compact .chf-h-spacer { display: none; }
 #chf-header.chf-compact .chf-h-chip { padding: 0 8px 0 3px !important; }
 #chf-header.chf-compact .chf-h-conn { padding: 0 9px !important; }
 
-/* the header replaces SillyTavern's horizontal top bar */
-body.chf-hdr-replace { --topBarBlockSize: 0px !important; }
+/* ----- horizontal top bar (phones): both bars share one 44px slot ----- */
+body.chf-hbar { --topBarBlockSize: 44px !important; }
+@media (max-width: 1000px) {
+    body.chf-hbar #sheld {
+        height: calc(100vh - var(--topBarBlockSize)) !important;
+        height: calc(100dvh - var(--topBarBlockSize)) !important;
+    }
+}
+/* header mode: our header sits exactly where SillyTavern's bar is, so nothing below moves */
+body.chf-hdr-replace #chf-header {
+    position: fixed !important;
+    top: 0; left: 0; right: 0;
+    width: 100vw; width: 100dvw;
+    height: var(--topBarBlockSize) !important;
+    z-index: 3006;
+    padding-left: max(env(safe-area-inset-left, 0px), 6px);
+    padding-right: max(env(safe-area-inset-right, 0px), 4px);
+}
 body.chf-hdr-replace #top-bar,
-body.chf-hdr-replace #top-settings-holder { display: none !important; }
+body.chf-hdr-replace #top-settings-holder > .drawer > .drawer-toggle { visibility: hidden !important; }
 #chf-swap-back { display: none; }
 body.chf-hdr-stbar #chf-swap-back { display: flex; }
 
