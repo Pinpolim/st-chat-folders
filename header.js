@@ -177,10 +177,8 @@ async function render() {
     const locked = safe(() => isPersonaLocked('chat'), false);
     const profile = currentProfileName();
     const horizontal = !isRail();
-    const avatar = e.isGroup ? '' : `<button class="chf-h-avatar" data-act="profile" title="Open ${esc(e.name)}'s profile"><img src="${esc(thumb('avatar', e.ch.avatar))}" alt=""></button>`;
 
     bar.innerHTML = `
-        ${avatar}
         <button class="chf-h-chat" data-act="chats" title="${esc(chatId)}">
             <i class="fa-solid fa-hashtag"></i><span>${esc(displayTitle(chatId, e))}</span><i class="fa-solid fa-chevron-down chf-h-caret"></i>
         </button>
@@ -249,7 +247,7 @@ function openMenu(anchor, html, cls) {
 async function openChatsMenu(anchor) {
     const e = currentEntity();
     const current = ctx().getCurrentChatId();
-    const m = openMenu(anchor, `<div class="chf-h-filter"><i class="fa-solid fa-magnifying-glass"></i><input type="search" placeholder="Filter ${esc(e?.name ?? '')}'s chats…"></div><div class="chf-h-list"><div class="chf-h-empty"><i class="fa-solid fa-circle-notch fa-spin"></i></div></div>`, 'chf-h-menu-chats');
+    const m = openMenu(anchor, `<div class="chf-h-list"><div class="chf-h-empty"><i class="fa-solid fa-circle-notch fa-spin"></i></div></div>`, 'chf-h-menu-chats');
     const list = await loadChats(true);
     if (!m.isConnected) return;
     const folder = { isGroup: e.isGroup, id: e.id };

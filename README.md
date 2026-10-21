@@ -25,7 +25,7 @@ The Character Management icon opens a full-page hub instead of the side drawer:
 
 Shown above the chat only while a chat is open (replaces the Chat Top Bar extension, which is hidden while this is on):
 
-- Character avatar (opens the profile in the Character Hub), chat switcher with persona / message count / last used, filterable
+- Chat switcher with persona / message count / last used
 - Persona chip: switch persona, lock it to the chat
 - Connection profile chip: profile name + grey API – model status; switch profiles
 - Search in chat (Enter / Shift+Enter to step through matches), new chat, branch, rename, delete, close
