@@ -100,3 +100,12 @@ export function resolvePersona(chat, folder) {
     return null;
 }
 
+
+/** Persona display name and title (titles tell apart versions that share a name). */
+export const personaName = (avatar) => power_user.personas?.[avatar] ?? avatar;
+export const personaTitle = (avatar) => String(power_user.persona_descriptions?.[avatar]?.title ?? '').trim();
+export function personaLabelHtml(avatar) {
+    const title = personaTitle(avatar);
+    return `${esc(personaName(avatar))}${title ? ` <span class="chf-ptitle">· ${esc(title)}</span>` : ''}`;
+}
+export const personaLabelText = (avatar) => (personaTitle(avatar) ? `${personaName(avatar)} · ${personaTitle(avatar)}` : personaName(avatar));

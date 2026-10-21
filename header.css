@@ -122,3 +122,9 @@ body.chf-hdr-stbar #chf-swap-back { display: flex; }
 body.chf-hdr-enabled #extensionTopBar,
 body.chf-hdr-enabled #extensionConnectionProfiles,
 body.chf-hdr-enabled #extensionSideBar { display: none !important; }
+
+#chf-header .chf-h-ptitle { color: var(--h-muted); font-size: .9em; max-width: 14ch; overflow: hidden; text-overflow: ellipsis; }
+.chf-h-pname { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
+.chf-h-pname > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chf-h-ptitle2 { opacity: .6; font-size: .8em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chf-ptitle { opacity: .7; }

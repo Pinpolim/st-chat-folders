@@ -18,7 +18,7 @@ import { getTokenCountAsync } from '../../../tokenizers.js';
 import { getSanitizedFilename } from '../../../utils.js';
 import { extension_settings, writeExtensionField } from '../../../extensions.js';
 import * as Welcome from '../../../welcome-screen.js';
-import { LOG, settings, save, esc, thumb, toMoment, resolvePersona } from './shared.js';
+import { LOG, settings, save, esc, thumb, toMoment, resolvePersona, personaLabelHtml } from './shared.js';
 import { registerHub, beforeHubOpens, sidebarOpen, sidebarWidth, layoutActive } from './layout.js';
 
 // ---------------------------------------------------------------------------
@@ -723,7 +723,7 @@ function renderSide() {
             ${bookRow('fa-book-bookmark', 'Chat', books.chat, 'Lorebooks bound to individual chats of this character')}
         </div>
         <h4>Personas</h4>
-        <div class="chh-linked">${personas.length ? personas.map(p => `<div class="chh-persona"><img src="${esc(thumb('persona', p))}" alt=""><span>${esc(power_user.personas?.[p] ?? p)}</span></div>`).join('') : '<span class="chh-muted">No connected persona</span>'}</div>`;
+        <div class="chh-linked">${personas.length ? personas.map(p => `<div class="chh-persona"><img src="${esc(thumb('persona', p))}" alt=""><span>${personaLabelHtml(p)}</span></div>`).join('') : '<span class="chh-muted">No connected persona</span>'}</div>`;
     renderBudget();
 }
 
@@ -763,7 +763,7 @@ function chatsHtml() {
         const pName = p ? (power_user.personas?.[p.avatar] ?? p.avatar) : '';
         return `<div class="chh-chat" data-chat="${esc(name)}" tabindex="0" role="button" title="${esc(name)}">
             <div class="chh-chat-t">${esc(title)}</div>
-            <div class="chh-chat-p">${p ? `<img src="${esc(thumb('persona', p.avatar))}" alt="" class="${p.source !== 'chat' ? 'dim' : ''}"><span>${esc(pName)}</span>${p.source === 'chat' ? '<i class="fa-solid fa-lock fa-2xs"></i>' : ''} · ` : ''}<span>${esc(relTime(ch._ts))}</span> · <span>${Number(ch.chat_items) || 0} msgs</span></div>
+            <div class="chh-chat-p">${p ? `<img src="${esc(thumb('persona', p.avatar))}" alt="" class="${p.source !== 'chat' ? 'dim' : ''}"><span>${personaLabelHtml(p.avatar)}</span>${p.source === 'chat' ? '<i class="fa-solid fa-lock fa-2xs"></i>' : ''} · ` : ''}<span>${esc(relTime(ch._ts))}</span> · <span>${Number(ch.chat_items) || 0} msgs</span></div>
         </div>`;
     }).join('') + (state.chats.length > 6 ? `<button class="chh-link" data-act="allchats">${state.allChats ? 'Show fewer' : `Show all ${state.chats.length}`}</button>` : '');
 }

@@ -11,7 +11,7 @@ import { callGenericPopup, POPUP_TYPE } from '../../../popup.js';
 import { timestampToMoment } from '../../../utils.js';
 import * as Welcome from '../../../welcome-screen.js';
 
-import { MODULE, LOG, DEFAULTS, settings, save, esc, thumb, toMoment, momentValue, resolvePersona } from './shared.js';
+import { MODULE, LOG, DEFAULTS, settings, save, esc, thumb, toMoment, momentValue, resolvePersona, personaLabelHtml, personaLabelText } from './shared.js';
 import { initHub } from './hub.js';
 import { initLayout, syncLayout } from './layout.js';
 import { initHeader, sync as syncHeader } from './header.js';
@@ -176,7 +176,7 @@ function personaHtml(chat, folder) {
     if (!settings().showPersona) return '';
     const p = resolvePersona(chat, folder);
     if (!p) return '';
-    const name = power_user.personas[p.avatar] || p.avatar;
+    const name = personaLabelText(p.avatar);
     const why = {
         chat: 'Persona locked to this chat',
         character: 'Persona connected to this character (chat has no lock)',
@@ -185,7 +185,7 @@ function personaHtml(chat, folder) {
     const more = p.extra ? ` <span class="chf-muted">+${p.extra}</span>` : '';
     return `<div class="chf-persona chf-src-${p.source}" title="${esc(`${name}\n${why}`)}">
         <img src="${esc(thumb('persona', p.avatar))}" alt="" loading="lazy">
-        <span>${esc(name)}</span>${more}
+        <span>${personaLabelHtml(p.avatar)}</span>${more}
         ${p.source === 'chat' ? '<i class="fa-solid fa-lock fa-2xs"></i>' : ''}
     </div>`;
 }

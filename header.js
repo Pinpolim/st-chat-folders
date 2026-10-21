@@ -15,7 +15,7 @@ import { power_user } from '../../../power-user.js';
 import { user_avatar, setUserAvatar, isPersonaLocked, togglePersonaLock } from '../../../personas.js';
 import { branchChat } from '../../../bookmarks.js';
 import { callGenericPopup, POPUP_TYPE } from '../../../popup.js';
-import { LOG, settings, esc, thumb, toMoment, resolvePersona } from './shared.js';
+import { LOG, settings, esc, thumb, toMoment, resolvePersona, personaName, personaTitle, personaLabelHtml, personaLabelText } from './shared.js';
 import { openHub } from './hub.js';
 
 let bar = null;
@@ -173,7 +173,8 @@ async function render() {
     const chatId = ctx().getCurrentChatId();
     const compact = isNarrow();
     const persona = user_avatar;
-    const personaName = power_user.personas?.[persona] ?? persona;
+    const pTitle = personaTitle(persona);
+    const pLabel = personaLabelText(persona);
     const locked = safe(() => isPersonaLocked('chat'), false);
     const profile = currentProfileName();
     const horizontal = !isRail();
@@ -183,8 +184,8 @@ async function render() {
             <i class="fa-solid fa-hashtag"></i><span>${esc(displayTitle(chatId, e))}</span><i class="fa-solid fa-chevron-down chf-h-caret"></i>
         </button>
         <div class="chf-h-spacer"></div>
-        <button class="chf-h-chip chf-h-persona" data-act="persona" title="Speaking as ${esc(personaName)}${locked ? ' (locked to this chat)' : ''}">
-            <img src="${esc(thumb('persona', persona))}" alt="">${compact ? '' : `<span>${esc(personaName)}</span>`}${locked ? '<i class="fa-solid fa-lock"></i>' : ''}
+        <button class="chf-h-chip chf-h-persona" data-act="persona" title="Speaking as ${esc(pLabel)}${locked ? ' (locked to this chat)' : ''}">
+            <img src="${esc(thumb('persona', persona))}" alt="">${compact ? '' : `<span>${esc(personaName(persona))}</span>${pTitle ? `<span class="chf-h-ptitle">${esc(pTitle)}</span>` : ''}`}${locked ? '<i class="fa-solid fa-lock"></i>' : ''}
         </button>
         <button class="chf-h-chip chf-h-conn" data-act="conn" title="Connection profile">
             <span class="chf-h-dot"></span>${compact ? '<i class="fa-solid fa-plug"></i>' : `<span class="chf-h-prof">${esc(profile || 'No profile')}</span><span class="chf-h-status">…</span>`}
@@ -253,11 +254,10 @@ async function openChatsMenu(anchor) {
     const folder = { isGroup: e.isGroup, id: e.id };
     m.querySelector('.chf-h-list').innerHTML = list.length ? list.map((ch) => {
         const p = !e.isGroup ? resolvePersona(ch, folder) : null;
-        const pn = p ? (power_user.personas?.[p.avatar] ?? p.avatar) : '';
         const when = ch._ts ? toMoment(ch._ts)?.fromNow() : '';
         return `<div class="chf-h-row${ch.name === current ? ' cur' : ''}" data-chat="${esc(ch.name)}" tabindex="0">
             <div class="chf-h-row-main"><div class="chf-h-row-t">${esc(displayTitle(ch.name, e))}</div>
-            <div class="chf-h-row-p">${p ? `<img src="${esc(thumb('persona', p.avatar))}" class="${p.source !== 'chat' ? 'dim' : ''}" alt="">${esc(pn)}${p.source === 'chat' ? ' <i class="fa-solid fa-lock fa-2xs"></i>' : ''} · ` : ''}${ch.chat_items != null ? `${Number(ch.chat_items)} msgs` : ''}</div></div>
+            <div class="chf-h-row-p">${p ? `<img src="${esc(thumb('persona', p.avatar))}" class="${p.source !== 'chat' ? 'dim' : ''}" alt="">${personaLabelHtml(p.avatar)}${p.source === 'chat' ? ' <i class="fa-solid fa-lock fa-2xs"></i>' : ''} · ` : ''}${ch.chat_items != null ? `${Number(ch.chat_items)} msgs` : ''}</div></div>
             <span class="chf-h-row-d">${esc(when ?? '')}</span></div>`;
     }).join('') : '<div class="chf-h-empty">No chats</div>';
 }
@@ -268,13 +268,13 @@ function openPersonaMenu(anchor) {
     const type = e?.isGroup ? 'group' : 'character';
     const connected = new Set(Object.entries(power_user.persona_descriptions ?? {})
         .filter(([, d]) => d?.connections?.some(c => c.type === type && c.id === e?.id)).map(([k]) => k));
-    const sorted = [...all].sort((a, b) => (connected.has(b) - connected.has(a)) || (power_user.personas[a] ?? a).localeCompare(power_user.personas[b] ?? b));
+    const sorted = [...all].sort((a, b) => (connected.has(b) - connected.has(a)) || personaName(a).localeCompare(personaName(b)) || personaTitle(a).localeCompare(personaTitle(b)));
     const locked = safe(() => isPersonaLocked('chat'), false);
     openMenu(anchor, `
         <h5>Persona for this chat</h5>
         ${all.length > 8 ? '<div class="chf-h-filter"><i class="fa-solid fa-magnifying-glass"></i><input type="search" placeholder="Filter personas…"></div>' : ''}
         <div class="chf-h-list">${sorted.map(a => `<div class="chf-h-prow${a === user_avatar ? ' cur' : ''}" data-persona="${esc(a)}" tabindex="0">
-            <img src="${esc(thumb('persona', a))}" alt=""><span>${esc(power_user.personas[a] ?? a)}</span>
+            <img src="${esc(thumb('persona', a))}" alt=""><span class="chf-h-pname"><span>${esc(personaName(a))}</span>${personaTitle(a) ? `<small class="chf-h-ptitle2">${esc(personaTitle(a))}</small>` : ''}</span>
             <small>${connected.has(a) ? 'connected' : (power_user.default_persona === a ? 'default' : '')}</small></div>`).join('')}</div>
         <label class="chf-h-lock"><input type="checkbox" data-act="lock" ${locked ? 'checked' : ''}><span class="chf-h-tg"></span>Lock persona to this chat</label>`, 'chf-h-menu-persona');
 }
