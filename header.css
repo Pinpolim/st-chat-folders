@@ -113,6 +113,8 @@
 
 /* ----- horizontal top bar (phones): both bars share one 44px slot ----- */
 body.chf-hbar { --topBarBlockSize: 44px !important; }
+/* SillyTavern's bar background has its own fixed height: stretch it to the full slot */
+body.chf-hbar #top-bar { height: var(--topBarBlockSize) !important; }
 @media (max-width: 1000px) {
     body.chf-hbar #sheld {
         height: calc(100vh - var(--topBarBlockSize)) !important;
