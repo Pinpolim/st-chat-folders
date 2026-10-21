@@ -464,3 +464,20 @@ body.chf-layout.chf-sidebar-open #WorldInfo.openDrawer,
 body.chf-layout.chf-sidebar-open #PersonaManagement.openDrawer {
     right: var(--chf-sidebar-w, 0px) !important;
 }
+
+/* ===== Phone: keep the input bar clear of rounded screen corners ===== */
+@media (max-width: 1000px) and (pointer: coarse) {
+    /* padding (not relative positioning) so the chat shrinks instead of being overlapped */
+    body.chf-safe-input:not(.PWA) #form_sheld {
+        padding-bottom: max(env(safe-area-inset-bottom, 0px), var(--chf-input-lift, 30px)) !important;
+    }
+    /* home-screen app: SillyTavern already adds the safe area below, only add what's missing */
+    body.chf-safe-input.PWA #form_sheld {
+        padding-bottom: max(0px, calc(var(--chf-input-lift, 30px) - env(safe-area-inset-bottom, 0px))) !important;
+    }
+    body.chf-safe-input #form_sheld {
+        padding-left: var(--chf-input-side, 12px) !important;
+        padding-right: var(--chf-input-side, 12px) !important;
+        box-sizing: border-box;
+    }
+}

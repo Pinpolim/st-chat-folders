@@ -31,6 +31,10 @@ Shown above the chat only while a chat is open (replaces the Chat Top Bar extens
 - Search in chat (Enter / Shift+Enter to step through matches), new chat, branch, rename, delete, close
 - Phones / horizontal top bar: the header takes the top bar's place; a swap button flips to SillyTavern's top bar and back. Opening a chat always starts on the header
 
+## Phone input bar
+
+On touch phones the chat input bar gets space below and at the sides so rounded screen corners (e.g. iPhone 17 Pro) don't cut off its buttons. Uses padding, so the chat shrinks instead of being overlapped. Both amounts are adjustable.
+
 ## Settings button
 
 User Settings, Backgrounds and AI Response Formatting are merged into one **Settings** button with tabs (opens on User Settings):

@@ -626,6 +626,17 @@ const SETTINGS_HTML = `
             <label class="checkbox_label"><input type="checkbox" data-key="stripCharName"> Hide character name at the start of chat titles</label>
             <label class="checkbox_label"><input type="checkbox" data-key="showPreview"> Show last message preview</label>
             <hr class="sysHR">
+            <b>Phone input bar</b>
+            <label class="checkbox_label" title="Touch phones only. Moves the chat input bar up and in so rounded screen corners don't cut off its buttons. Remove any custom CSS you used for this."><input type="checkbox" data-key="phoneSafeInput"> Keep the input bar clear of the screen corners</label>
+            <div class="chf-settings-row">
+                <label>Space below (px)</label>
+                <input type="number" class="text_pole" data-key="phoneInputLift" min="0" max="80" step="2">
+            </div>
+            <div class="chf-settings-row">
+                <label>Space at the sides (px)</label>
+                <input type="number" class="text_pole" data-key="phoneInputSide" min="0" max="40" step="2">
+            </div>
+            <hr class="sysHR">
             <b>Settings button</b>
             <label class="checkbox_label" title="Backgrounds and AI Response Formatting become tabs of the User Settings page; their icons are hidden."><input type="checkbox" data-key="mergeSettings"> Merge User Settings, Backgrounds and Formatting into one button</label>
             <hr class="sysHR">
@@ -679,6 +690,13 @@ const SETTINGS_HTML = `
     </div>
 </div>`;
 
+function syncPhoneInput() {
+    const s = settings();
+    document.body.classList.toggle('chf-safe-input', s.enabled !== false && s.phoneSafeInput);
+    document.body.style.setProperty('--chf-input-lift', `${Number(s.phoneInputLift) || 0}px`);
+    document.body.style.setProperty('--chf-input-side', `${Number(s.phoneInputSide) || 0}px`);
+}
+
 function syncSettingsUi() {
     const s = settings();
     document.querySelectorAll('.chf-settings [data-key]').forEach((el) => {
@@ -701,7 +719,8 @@ function mountSettings() {
         if (el.type === 'checkbox') s[key] = el.checked;
         else if (el.type === 'number') {
             const min = Number(el.min) || 0, max = Number(el.max) || 5000;
-            s[key] = Math.min(max, Math.max(min, parseInt(el.value) || DEFAULTS[key]));
+            const n = parseInt(el.value);
+            s[key] = Math.min(max, Math.max(min, Number.isFinite(n) ? n : DEFAULTS[key]));
         }
         else s[key] = el.value;
         save();
@@ -710,6 +729,7 @@ function mountSettings() {
         syncLayout();
         syncHeader();
         syncTabs();
+        syncPhoneInput();
     });
 }
 
@@ -724,6 +744,7 @@ jQuery(() => {
     try { initLayout(); } catch (err) { console.error(LOG, 'layout init failed', err); }
     try { initHeader(); } catch (err) { console.error(LOG, 'header init failed', err); }
     syncBodyClasses();
+    syncPhoneInput();
 
     // Re-tint the logo when the theme colours or background image change
     const recolorObserver = new MutationObserver(scheduleRecolor);

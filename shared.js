@@ -22,6 +22,9 @@ export const DEFAULTS = Object.freeze({
     logoStyle: 'emboss',    // 'emboss' | 'deboss' | 'mono' | 'original'
     versionFooter: true,    // move "SillyTavern x.y.z" to a faded footer at the bottom
     assistantButton: true,  // replace "Temporary Chat" with "new chat with your assistant"
+    phoneSafeInput: true,   // keep the chat input bar clear of rounded screen corners (touch phones)
+    phoneInputLift: 30,     // px of space under the input bar on phones
+    phoneInputSide: 12,     // px of space left/right of the input bar on phones
     mergeSettings: true,    // one Settings button: User Settings / Backgrounds / AI Response Formatting tabs
     settingsSection: 'appearance',
     hideCcUnused: true,     // hide Formatting options that do nothing with Chat Completion
