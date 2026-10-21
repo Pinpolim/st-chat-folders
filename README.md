@@ -21,6 +21,16 @@ The Character Management icon opens a full-page hub instead of the side drawer:
 - Right column: this character's chats with personas, token budget, character / additional / chat lorebooks, connected personas
 - Edits save through SillyTavern's own `/api/characters/merge-attributes` endpoint; the classic panel stays one click away
 
+## Chat header
+
+Shown above the chat only while a chat is open (replaces the Chat Top Bar extension, which is hidden while this is on):
+
+- Character avatar (opens the profile in the Character Hub), chat switcher with persona / message count / last used, filterable
+- Persona chip: switch persona, lock it to the chat
+- Connection profile chip: profile name + grey API – model status; switch profiles
+- Search in chat (Enter / Shift+Enter to step through matches), new chat, branch, rename, delete, close
+- Phones / horizontal top bar: the header takes the top bar's place; a swap button flips to SillyTavern's top bar and back. Opening a chat always starts on the header
+
 ## Layout manager (desktop)
 
 - One page at a time: opening a top-bar page closes the others (and the Character Hub)

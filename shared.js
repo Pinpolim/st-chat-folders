@@ -22,6 +22,7 @@ export const DEFAULTS = Object.freeze({
     logoStyle: 'emboss',    // 'emboss' | 'deboss' | 'mono' | 'original'
     versionFooter: true,    // move "SillyTavern x.y.z" to a faded footer at the bottom
     assistantButton: true,  // replace "Temporary Chat" with "new chat with your assistant"
+    chatHeader: true,       // chat header bar (replaces the Chat Top Bar extension)
     layoutManager: true,    // one page at a time; preset panel is the right sidebar (desktop)
     hubEnabled: true,       // character icon opens the Character Hub (desktop only)
     hubSort: 'recent',      // 'recent' | 'name' | 'added' | 'size'

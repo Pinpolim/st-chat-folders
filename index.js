@@ -14,6 +14,7 @@ import * as Welcome from '../../../welcome-screen.js';
 import { MODULE, LOG, DEFAULTS, settings, save, esc, thumb, toMoment, momentValue, resolvePersona } from './shared.js';
 import { initHub } from './hub.js';
 import { initLayout, syncLayout } from './layout.js';
+import { initHeader, sync as syncHeader } from './header.js';
 
 /** Remembers which folders are open / pinned. */
 function toggleListItem(listName, key, on) {
@@ -624,6 +625,9 @@ const SETTINGS_HTML = `
             <label class="checkbox_label"><input type="checkbox" data-key="stripCharName"> Hide character name at the start of chat titles</label>
             <label class="checkbox_label"><input type="checkbox" data-key="showPreview"> Show last message preview</label>
             <hr class="sysHR">
+            <b>Chat header</b>
+            <label class="checkbox_label" title="Chat switcher, persona picker, connection profile and chat buttons above the chat. Hides the Chat Top Bar extension while on."><input type="checkbox" data-key="chatHeader"> Show the chat header</label>
+            <hr class="sysHR">
             <b>Layout (desktop)</b>
             <label class="checkbox_label" title="Opening a top-bar page closes the others. The preset panel is the only sidebar: it sits next to the chat, Persona Management, Lorebooks and the Character Hub, and closes anything else."><input type="checkbox" data-key="layoutManager"> One page at a time, preset panel as right sidebar</label>
             <hr class="sysHR">
@@ -700,6 +704,7 @@ function mountSettings() {
         syncSettingsUi();
         rerenderAll();
         syncLayout();
+        syncHeader();
     });
 }
 
@@ -710,6 +715,7 @@ jQuery(() => {
     mountSettings();
     try { initHub(); } catch (err) { console.error(LOG, 'hub init failed', err); }
     try { initLayout(); } catch (err) { console.error(LOG, 'layout init failed', err); }
+    try { initHeader(); } catch (err) { console.error(LOG, 'header init failed', err); }
     syncBodyClasses();
 
     // Re-tint the logo when the theme colours or background image change
