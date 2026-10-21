@@ -31,6 +31,13 @@ Shown above the chat only while a chat is open (replaces the Chat Top Bar extens
 - Search in chat (Enter / Shift+Enter to step through matches), new chat, branch, rename, delete, close
 - Phones / horizontal top bar: the header takes the top bar's place; a swap button flips to SillyTavern's top bar and back. Opening a chat always starts on the header
 
+## Settings button
+
+User Settings, Backgrounds and AI Response Formatting are merged into one **Settings** button with tabs (opens on User Settings):
+
+- User Settings split into sections: Appearance, Characters, Chat & messages, Miscellaneous, Custom CSS (or All). The settings search box always searches everything
+- AI Response Formatting can hide every option that has no effect with Chat Completion (on by default)
+
 ## Layout manager (desktop)
 
 - One page at a time: opening a top-bar page closes the others (and the Character Hub)

@@ -15,6 +15,7 @@ import { MODULE, LOG, DEFAULTS, settings, save, esc, thumb, toMoment, momentValu
 import { initHub } from './hub.js';
 import { initLayout, syncLayout } from './layout.js';
 import { initHeader, sync as syncHeader } from './header.js';
+import { initSettingsTabs, sync as syncTabs } from './settings-tabs.js';
 
 /** Remembers which folders are open / pinned. */
 function toggleListItem(listName, key, on) {
@@ -625,6 +626,9 @@ const SETTINGS_HTML = `
             <label class="checkbox_label"><input type="checkbox" data-key="stripCharName"> Hide character name at the start of chat titles</label>
             <label class="checkbox_label"><input type="checkbox" data-key="showPreview"> Show last message preview</label>
             <hr class="sysHR">
+            <b>Settings button</b>
+            <label class="checkbox_label" title="Backgrounds and AI Response Formatting become tabs of the User Settings page; their icons are hidden."><input type="checkbox" data-key="mergeSettings"> Merge User Settings, Backgrounds and Formatting into one button</label>
+            <hr class="sysHR">
             <b>Chat header</b>
             <label class="checkbox_label" title="Chat switcher, persona picker, connection profile and chat buttons above the chat. Hides the Chat Top Bar extension while on."><input type="checkbox" data-key="chatHeader"> Show the chat header</label>
             <hr class="sysHR">
@@ -705,6 +709,7 @@ function mountSettings() {
         rerenderAll();
         syncLayout();
         syncHeader();
+        syncTabs();
     });
 }
 
@@ -714,6 +719,8 @@ jQuery(() => {
     settings();
     mountSettings();
     try { initHub(); } catch (err) { console.error(LOG, 'hub init failed', err); }
+    // must register before the layout manager so the merged icon can close the page first
+    try { initSettingsTabs(); } catch (err) { console.error(LOG, 'settings tabs init failed', err); }
     try { initLayout(); } catch (err) { console.error(LOG, 'layout init failed', err); }
     try { initHeader(); } catch (err) { console.error(LOG, 'header init failed', err); }
     syncBodyClasses();
