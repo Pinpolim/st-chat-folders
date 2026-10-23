@@ -11,7 +11,7 @@
 import * as ST from '../../../../script.js';
 import * as Groups from '../../../group-chats.js';
 import { tags as allTags, tag_map, addTagsToEntity, removeTagFromEntity } from '../../../tags.js';
-import { world_info, openWorldInfoEditor } from '../../../world-info.js';
+import { world_info, world_names, openWorldInfoEditor, charSetAuxWorlds } from '../../../world-info.js';
 import { power_user } from '../../../power-user.js';
 import { callGenericPopup, POPUP_TYPE } from '../../../popup.js';
 import { getTokenCountAsync } from '../../../tokenizers.js';
@@ -718,18 +718,84 @@ function renderSide() {
         <div class="chh-budget"></div>
         <h4>Lorebooks</h4>
         <div class="chh-linked">
-            ${bookRow('fa-book', 'Character', books.primary ? [books.primary] : [], 'Primary lorebook bound to the card')}
-            ${bookRow('fa-book-medical', 'Additional', books.extra, 'Auxiliary lorebooks linked to this character')}
-            ${bookRow('fa-book-bookmark', 'Chat', books.chat, 'Lorebooks bound to individual chats of this character')}
+            ${bookRow('fa-book', 'Character', books.primary ? [books.primary] : [], 'Primary lorebook bound to the card', 'primary')}
+            ${bookRow('fa-book-medical', 'Additional', books.extra, 'Auxiliary lorebooks linked to this character', 'extra')}
+            ${bookRow('fa-book-bookmark', 'Chat', books.chat, 'Lorebooks bound to individual chats of this character (change them from inside the chat)', 'chat')}
         </div>
         <h4>Personas</h4>
         <div class="chh-linked">${personas.length ? personas.map(p => `<div class="chh-persona"><img src="${esc(thumb('persona', p))}" alt=""><span>${personaLabelHtml(p)}</span></div>`).join('') : '<span class="chh-muted">No connected persona</span>'}</div>`;
     renderBudget();
 }
 
-function bookRow(icon, label, names, tip) {
+function bookRow(icon, label, names, tip, kind) {
+    const editable = kind !== 'chat';
+    const chips = names.map((n) => {
+        const name = n.name ?? n;
+        return `<span class="chh-bookchip"><button class="chh-link" data-act="book" data-book="${esc(name)}" title="Open in the lorebook editor">${esc(name)}${n.count ? ` <small>×${n.count}</small>` : ''}</button>${editable ? `<button class="chh-bookx" data-act="book-unbind" data-kind="${kind}" data-book="${esc(name)}" title="Unbind ${esc(name)}"><i class="fa-solid fa-xmark"></i></button>` : ''}</span>`;
+    }).join('');
+    const add = !editable ? '' : (kind === 'primary' && names.length
+        ? `<button class="chh-bookadd" data-act="book-add" data-kind="primary" title="Change the character lorebook"><i class="fa-solid fa-arrow-right-arrow-left"></i></button>`
+        : `<button class="chh-bookadd" data-act="book-add" data-kind="${kind}" title="${kind === 'primary' ? 'Bind a character lorebook' : 'Add an additional lorebook'}"><i class="fa-solid fa-plus"></i></button>`);
     return `<div class="chh-book" title="${esc(tip)}"><span class="chh-book-l"><i class="fa-solid ${icon} fa-fw"></i>${label}</span>
-        <span class="chh-book-r">${names.length ? names.map(n => `<button class="chh-link" data-act="book" data-book="${esc(n.name ?? n)}">${esc(n.name ?? n)}${n.count ? ` <small>×${n.count}</small>` : ''}</button>`).join('') : '<span class="chh-muted">—</span>'}</span></div>`;
+        <span class="chh-book-r">${chips || (editable ? '' : '<span class="chh-muted">—</span>')}${add}</span></div>`;
+}
+
+// ----- lorebook binding -----
+
+function closePicker() {
+    hubEl?.querySelector('.chh-picker')?.remove();
+}
+
+function openBookPicker(anchor, kind) {
+    closePicker();
+    const c = currentChar();
+    const books = linkedBooks(c);
+    const taken = new Set(kind === 'primary' ? [books.primary] : [books.primary, ...books.extra]);
+    const names = [...(world_names ?? [])].filter(n => !taken.has(n)).sort((a, b) => a.localeCompare(b));
+    const el = document.createElement('div');
+    el.className = 'chh-picker';
+    el.innerHTML = `<div class="chh-picker-h">${kind === 'primary' ? 'Character lorebook' : 'Add additional lorebook'}</div>
+        <input type="search" class="chh-picker-q" placeholder="Filter lorebooks…">
+        <div class="chh-picker-list">${names.length ? names.map(n => `<button data-pick="${esc(n)}"><i class="fa-solid fa-book fa-fw"></i><span>${esc(n)}</span></button>`).join('') : '<div class="chh-muted">No other lorebooks.</div>'}</div>`;
+    hubEl.append(el);
+    const r = anchor.getBoundingClientRect();
+    const h = hubEl.getBoundingClientRect();
+    el.style.top = `${Math.min(r.bottom - h.top + 6, h.height - el.offsetHeight - 10)}px`;
+    el.style.left = `${Math.max(8, r.right - h.left - el.offsetWidth)}px`;
+    const q = el.querySelector('.chh-picker-q');
+    q.focus();
+    q.addEventListener('input', () => {
+        const v = q.value.trim().toLowerCase();
+        el.querySelectorAll('[data-pick]').forEach(b => b.classList.toggle('chh-hidden', !!v && !b.dataset.pick.toLowerCase().includes(v)));
+    });
+    el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const b = /** @type {HTMLElement} */ (e.target).closest('[data-pick]');
+        if (!b) return;
+        closePicker();
+        bindBook(kind, b.dataset.pick, true);
+    });
+}
+
+async function bindBook(kind, name, on) {
+    const c = currentChar();
+    if (!c) return;
+    try {
+        if (kind === 'primary') {
+            const value = on ? name : '';
+            await writeCard(c.avatar, { 'data.extensions.world': value });
+            if (String(charIndex(c.avatar)) === String(ST.this_chid)) $('#character_world').val(value);
+        } else {
+            const fileName = c.avatar.replace(/\.[^.]+$/, '');
+            const current = linkedBooks(c).extra;
+            charSetAuxWorlds(fileName, on ? [...current, name] : current.filter(n => n !== name));
+        }
+        setStatus('<i class="fa-solid fa-check"></i> Saved', 'ok');
+    } catch (err) {
+        console.error(LOG, 'lorebook bind failed', err);
+        toastr.error(`Could not change the lorebook. ${err?.message ?? ''}`);
+    }
+    renderSide();
 }
 
 function linkedBooks(c) {
@@ -899,8 +965,9 @@ function addTag(name) {
 
 async function onHubClick(e) {
     const t = /** @type {HTMLElement} */ (e.target);
-    // close an open ⋯ menu when clicking elsewhere
+    // close an open ⋯ menu / lorebook picker when clicking elsewhere
     if (!t.closest('.chh-menu-wrap')) hubEl.querySelectorAll('.chh-menu').forEach(m => m.hidden = true);
+    if (!t.closest('.chh-picker, [data-act="book-add"]')) closePicker();
 
     const nav = t.closest('.chh-nav');
     if (nav) {
@@ -976,6 +1043,8 @@ async function onHubClick(e) {
             state.allChats = !state.allChats;
             hubEl.querySelector('.chh-chats').innerHTML = chatsHtml();
             return;
+        case 'book-add': return openBookPicker(btn, btn.dataset.kind);
+        case 'book-unbind': return bindBook(btn.dataset.kind, btn.dataset.book, false);
         case 'book': {
             const name = btn.dataset.book;
             closeHub();

@@ -18,7 +18,7 @@ The Character Management icon opens a full-page hub instead of the side drawer:
 - Library: sidebar with All / Recently chatted / Favorites / Groups / every tag; large card grid; search by name, tag or creator; sort; hover to Continue, start a New chat or Edit
 - Profile: every card field visible in tabs (Definition, Greetings, Examples, Prompt overrides, Gallery, Lore & notes), token counts, tag editing, favorite, export, delete
 - Alternate versions of Description, Personality, Scenario, Examples, Main prompt and Post-history instructions: arrows to browse, lock to use. Shares storage with the Alternate Fields extension (`data.extensions.alternate_fields`)
-- Right column: this character's chats with personas, token budget, character / additional / chat lorebooks, connected personas
+- Right column: this character's chats with personas, token budget, character / additional / chat lorebooks (bind, change or unbind the character and additional ones), connected personas
 - Edits save through SillyTavern's own `/api/characters/merge-attributes` endpoint; the classic panel stays one click away
 
 ## Chat header
